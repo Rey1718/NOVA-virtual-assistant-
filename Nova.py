@@ -4,7 +4,10 @@ import pywhatkit
 import datetime
 import time
 from multiprocessing import Process
-import openai
+import os
+from googlesearch import search
+import webbrowser
+
 
 
 r = sr.Recognizer()
@@ -48,9 +51,8 @@ def escuchar_comando():
     except sr.UnknownValueError:
         return ""
 
-if __name__ == '__main__':
+def main():
     activado = False
-
     while True:
         if not activado:
             if escuchar_orden_activacion():
@@ -75,6 +77,25 @@ if __name__ == '__main__':
             elif 'hora' in comando:
                 hora_actual = datetime.datetime.now().strftime('%H:%M:%S')
                 hablar("La hora actual es: " + hora_actual)
+            elif 'abre notepad' in comando:
+                os.system("start notepad")
+            elif 'busca en google' in comando:
+                busqueda = comando.replace('busca', '').strip()
+                if busqueda:
+                    hablar("buscando" + busqueda)
+                    time.sleep(1.5)
+                    resultados = search(busqueda)
+                    primera_url = next(resultados, None)
+                    for url in resultados:
+                        if "youtube.com" not in url.lower():
+                            primera_url = url
+                            break
+                if primera_url:
+                    webbrowser.open(primera_url)
+       
             else:
                 hablar("No entendí tu comando.")
 
+
+if __name__ == '__main__':
+    main()
