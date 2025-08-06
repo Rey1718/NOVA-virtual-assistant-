@@ -7,6 +7,7 @@ from multiprocessing import Process
 import os
 from googlesearch import search
 import webbrowser
+import subprocess
 
 
 
@@ -50,6 +51,30 @@ def escuchar_comando():
         return texto.lower()
     except sr.UnknownValueError:
         return ""
+    
+def buscar_app(nombre_app):
+    # Nombre del ejecutable esperado
+    ejecutable = nombre_app.lower() + ".exe"
+    
+    # Lista de discos a buscar (puedes agregar más si tienes más unidades)
+    discos = ['C:\\', 'D:\\', 'E:\\']
+    
+    for disco in discos:
+        for raiz, carpetas, archivos in os.walk(disco):
+            for archivo in archivos:
+                if archivo.lower() == ejecutable:
+                    ruta_completa = os.path.join(raiz, archivo)
+                    return ruta_completa
+    return None
+
+def abrir_app(nombre_app):
+    ruta = buscar_app(nombre_app)
+    if ruta:
+        subprocess.Popen(ruta)
+        hablar(f"Abriendo {nombre_app}")
+    else:
+        hablar(f"No encontré la aplicación {nombre_app} en tus discos.")
+
 
 def main():
     activado = False
@@ -66,6 +91,7 @@ def main():
             elif 'apagar' in comando:
                 hablar("Si me necesitas, avísame. Apagando...")
                 break
+
             elif 'reproduce' in comando:
                 cancion = comando.replace('reproduce', '').strip()
                 if cancion:
@@ -74,11 +100,17 @@ def main():
                     pywhatkit.playonyt(cancion)
                 else:
                     hablar("No dijiste qué canción reproducir.")
+
             elif 'hora' in comando:
                 hora_actual = datetime.datetime.now().strftime('%H:%M:%S')
                 hablar("La hora actual es: " + hora_actual)
-            elif 'abre notepad' in comando:
-                os.system("start notepad")
+
+            elif 'abre' in comando:
+                abrir = comando.replace('abre', '').strip()
+                hablar("abriendo" + abrir)
+                abrir_app(abrir)
+
+
             elif 'busca en google' in comando:
                 busqueda = comando.replace('busca', '').strip()
                 if busqueda:
