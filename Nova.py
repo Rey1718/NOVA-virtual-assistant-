@@ -107,6 +107,7 @@ def hablar_con_mistral(prompt):
 
 
 
+
 def main():
     activado = False
     try:
