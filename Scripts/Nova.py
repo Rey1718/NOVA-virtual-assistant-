@@ -76,6 +76,37 @@ def abrir_app(nombre_app):
     else:
         hablar(f"No encontré la aplicación {nombre_app} en tus discos.")
 
+def hablar_con_mistral(prompt):
+    if not prompt:
+        hablar("No entendí lo que dijiste.")
+        return
+
+    payload = {
+        "model": "mistral",
+        "prompt": prompt,
+        "max_tokens": 200,
+        "temperature": 0.7,
+        "stream": True
+    }
+
+    try:
+        response = requests.post("http://localhost:11434/api/generate", json=payload, stream=True)
+        respuesta = ""
+        for linea in response.iter_lines():
+            if linea:
+                decoded_line = linea.decode('utf-8')
+                if '"response":"' in decoded_line:
+                    parte = decoded_line.split('"response":"')[1].split('"')[0]
+                    respuesta += parte
+        print("Mistral responde:", respuesta)
+        hablar(respuesta)
+
+    except requests.exceptions.RequestException as e:
+        print("Error al conectarse con Mistral:", e)
+        hablar("No pude conectarme al modelo de inteligencia artificial.")
+
+
+
 def main():
     activado = False
     try:
@@ -127,7 +158,8 @@ def main():
                     else:
                         hablar("No dijiste qué buscar.")
                 else:
-                    hablar("No entendí tu comando.")
+                    hablar_con_mistral(comando)
+
     except Exception as e:
         print(f"Error en main loop: {e}")
 
@@ -135,3 +167,7 @@ if __name__ == '__main__':
     multiprocessing.freeze_support()
     main()
     input("Presiona ENTER para salir...")
+
+
+
+
